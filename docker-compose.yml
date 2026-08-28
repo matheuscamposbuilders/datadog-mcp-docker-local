@@ -1,0 +1,32 @@
+# Dev/smoke compose file. Claude Code itself talks to the server via
+# `docker run` directly (see .mcp.json) — this compose file exists for
+# local development and manual smoke-testing only, not for production use.
+services:
+  datadog-mcp:
+    build:
+      context: .
+      target: runtime
+    image: datadog-local-mcp:latest
+    stdin_open: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    user: "10001:10001"
+    pids_limit: 128
+    mem_limit: 256m
+    restart: "no"
+    # env_file passa o arquivo direto ao Docker, em vez de depender da
+    # interpolação implícita de ${VAR} pelo Compose (que só lê o .env quando
+    # ele está no diretório do próprio compose file). Mecanismo explícito e
+    # igual ao --env-file usado no .mcp.json: as duas formas de subir o
+    # servidor leem a mesma fonte de configuração.
+    #
+    # Se o .env não existir, o container sobe sem as variáveis e falha no
+    # boot com mensagem citando a variável faltante (ver src/config.ts) —
+    # em vez do erro de interpolação do Compose que havia antes.
+    env_file:
+      - .env
