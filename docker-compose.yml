@@ -3,6 +3,7 @@
 # local development and manual smoke-testing only, not for production use.
 services:
   datadog-mcp:
+    container_name: datadog-mcp
     build:
       context: .
       target: runtime
